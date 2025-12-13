@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   StyleSheet,
   View,
@@ -6,34 +6,40 @@ import {
   SafeAreaView,
   StatusBar,
   ListRenderItem,
-} from 'react-native';
-import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { searchBooks } from '../services/finnaApi';
-import { RootStackParamList } from '../../App';
-import { FinnaRecord } from '../types/finna';
-import SearchBar from '../components/SearchBar';
-import BookFilter from '../components/BookFilter';
-import BookListItem from '../components/BookListItem';
-import ResultCount from '../components/ResultCount';
-import EmptyState from '../components/EmptyState';
-import LoadMoreFooter from '../components/LoadMoreFooter';
-import ErrorMessage from '../components/ErrorMessage';
+} from "react-native";
+import { StatusBar as ExpoStatusBar } from "expo-status-bar";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { searchBooks } from "../services/finnaApi";
+import { RootStackParamList } from "../../App";
+import { FinnaRecord } from "../types/finna";
+import SearchBar from "../components/SearchBar";
+import SearchFilters from "../components/SearchFilters";
+import BookListItem from "../components/BookListItem";
+import ResultCount from "../components/ResultCount";
+import EmptyState from "../components/EmptyState";
+import LoadMoreFooter from "../components/LoadMoreFooter";
+import ErrorMessage from "../components/ErrorMessage";
 
-type SearchScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Search'>;
+type SearchScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "Search"
+>;
 
 interface SearchScreenProps {
   navigation: SearchScreenNavigationProp;
 }
 
-export default function SearchScreen({ navigation }: SearchScreenProps): JSX.Element {
-  const [searchQuery, setSearchQuery] = useState<string>('');
+export default function SearchScreen({
+  navigation,
+}: SearchScreenProps): JSX.Element {
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [results, setResults] = useState<FinnaRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [resultCount, setResultCount] = useState<number>(0);
   const [booksOnly, setBooksOnly] = useState<boolean>(false);
+  const [finnishOnly, setFinnishOnly] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(false);
 
@@ -58,25 +64,33 @@ export default function SearchScreen({ navigation }: SearchScreenProps): JSX.Ele
     setError(null);
 
     try {
-      const data = await searchBooks(searchQuery, limit, booksOnly, currentPage);
+      const data = await searchBooks(
+        searchQuery,
+        limit,
+        booksOnly,
+        finnishOnly,
+        currentPage
+      );
       const newRecords = data.records || [];
-      
+
       if (resetPage) {
         setResults(newRecords);
         setPage(1);
       } else {
-        setResults(prev => [...prev, ...newRecords]);
+        setResults((prev) => [...prev, ...newRecords]);
         setPage(currentPage);
       }
-      
+
       setResultCount(data.resultCount || 0);
-      
+
       // Tarkista, onko lisää tuloksia saatavilla
-      const totalLoaded = resetPage ? newRecords.length : results.length + newRecords.length;
+      const totalLoaded = resetPage
+        ? newRecords.length
+        : results.length + newRecords.length;
       setHasMore(totalLoaded < (data.resultCount || 0));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Haku epäonnistui');
-      console.error('Hakuvirhe:', err);
+      setError(err instanceof Error ? err.message : "Haku epäonnistui");
+      console.error("Hakuvirhe:", err);
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -95,7 +109,7 @@ export default function SearchScreen({ navigation }: SearchScreenProps): JSX.Ele
 
   const handleBookPress = (item: FinnaRecord): void => {
     if (item.id) {
-      navigation.navigate('Details', { bookId: item.id, bookData: item });
+      navigation.navigate("Details", { bookId: item.id, bookData: item });
     }
   };
 
@@ -107,7 +121,7 @@ export default function SearchScreen({ navigation }: SearchScreenProps): JSX.Ele
     <SafeAreaView style={styles.container}>
       <ExpoStatusBar style="light" />
       <StatusBar barStyle="light-content" />
-      
+
       <SearchBar
         searchQuery={searchQuery}
         onSearchQueryChange={setSearchQuery}
@@ -115,9 +129,11 @@ export default function SearchScreen({ navigation }: SearchScreenProps): JSX.Ele
         loading={loading}
       />
 
-      <BookFilter
+      <SearchFilters
         booksOnly={booksOnly}
-        onValueChange={setBooksOnly}
+        onBooksOnlyChange={setBooksOnly}
+        finnishOnly={finnishOnly}
+        onFinnishOnlyChange={setFinnishOnly}
       />
 
       {error && <ErrorMessage message={error} />}
@@ -135,8 +151,8 @@ export default function SearchScreen({ navigation }: SearchScreenProps): JSX.Ele
           onEndReachedThreshold={0.5}
           ListFooterComponent={<LoadMoreFooter loading={loadingMore} />}
         />
-      ) : !loading && searchQuery && (
-        <EmptyState />
+      ) : (
+        !loading && searchQuery && <EmptyState />
       )}
     </SafeAreaView>
   );
@@ -145,9 +161,9 @@ export default function SearchScreen({ navigation }: SearchScreenProps): JSX.Ele
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   listContainer: {
-    padding: 8,
+    padding: 0,
   },
 });

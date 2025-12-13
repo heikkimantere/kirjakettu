@@ -44,7 +44,7 @@ export default function SearchBar({
 const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
-    padding: 16,
+    padding: 8,
     backgroundColor: '#2c3e50',
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 48,
     backgroundColor: '#f8f8f8',
-    borderRadius: 8,
+    borderRadius: 4,
     paddingHorizontal: 16,
     fontSize: 16,
     marginRight: 12,

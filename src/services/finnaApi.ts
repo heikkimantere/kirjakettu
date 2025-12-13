@@ -7,10 +7,17 @@ const FINNA_API_BASE = 'https://api.finna.fi';
  * @param query - Hakusana
  * @param limit - Maksimimäärä tuloksia (oletus: 20)
  * @param booksOnly - Rajaa hakutulokset vain kirjoihin (oletus: false)
+ * @param finnishOnly - Rajaa hakutulokset vain suomenkielisiin (oletus: false)
  * @param page - Sivunumero paginointia varten (oletus: 1)
  * @returns API-vastaus
  */
-export async function searchBooks(query: string, limit: number = 20, booksOnly: boolean = false, page: number = 1): Promise<FinnaSearchResponse> {
+export async function searchBooks(
+  query: string, 
+  limit: number = 20, 
+  booksOnly: boolean = false, 
+  finnishOnly: boolean = false,
+  page: number = 1
+): Promise<FinnaSearchResponse> {
   if (!query || !query.trim()) {
     throw new Error('Hakusana ei voi olla tyhjä');
   }
@@ -31,6 +38,11 @@ export async function searchBooks(query: string, limit: number = 20, booksOnly: 
   // Rajaa hakutulokset vain kirjoihin, jos booksOnly on true
   if (booksOnly) {
     params.append('filter[]', 'format:"0/Book/"');
+  }
+
+  // Rajaa hakutulokset vain suomenkielisiin, jos finnishOnly on true
+  if (finnishOnly) {
+    params.append('filter[]', 'language:"fin"');
   }
 
   const url = `${FINNA_API_BASE}/api/v1/search?${params.toString()}`;
